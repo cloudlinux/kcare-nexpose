@@ -1,0 +1,13 @@
+nexpose:
+  host: 178.204.226.194
+  port: 3780
+  username: user
+  password: hup^r37kZc72MjY}=ox?WTQ
+
+  report-name: kc-report
+  is_approve: true
+
+kernelcare-eportal:
+  host: 178.204.226.194
+  port: 80
+  key: 0G0996952sTtCU4z
