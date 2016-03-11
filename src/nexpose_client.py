@@ -1,9 +1,40 @@
+"""
+Basic implementation Nexpose API
+Full API guide take a look in https://community.rapid7.com/docs/DOC-1896
+
+What implemented:
+- Login/Logout
+- Report
+    - Get report listing
+    - Get report config
+    - Get template listing
+    - Get specific report from URI
+
+- Exceptions
+    - Create vulnerability exception
+    - Approve vulnerability exception
+
+- Vulnerability
+    - Get vulnerability listing
+    - Get vulnerability details
+
+Example of using:
+```
+with NexposeClient('localhost', 3780, "username", "password") as client:
+    listing = client.report_listing()
+    for report in listing:
+        config = client.report_config(report.get('cfg-id'))
+
+```
+"""
 import logging
 import random
+import ssl
+import xml.etree.ElementTree as etree
 from abc import ABCMeta
 
 import requests
-from lxml import etree as ET
+from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -12,6 +43,16 @@ logger = logging.getLogger(__name__)
 
 VERSION_1_1 = '1.1'
 VERSION_1_2 = '1.2'
+
+from requests.packages.urllib3.poolmanager import PoolManager
+
+
+class ReportSummaryStatus(object):
+    STARTED = 'Started'
+    GENERATED = 'Generated'
+    FAILED = 'Failed'
+    ABORTED = 'Aborted'
+    UNKNOWN = 'Unknown'
 
 
 class ExceptionReason(object):
@@ -29,6 +70,12 @@ class ExceptionScope(object):
 
 
 class VulnerabilityDetailInstance(object):
+    """
+    Proxy for quick access to description, references
+    """
+
+    __slots__ = ['elem']
+
     def __init__(self, elem):
         self.elem = elem
 
@@ -47,16 +94,25 @@ class VulnerabilityDetailInstance(object):
 
 
 class Request(object):
+    class TLSAdapter(HTTPAdapter):
+        # For support python 2.6
+        def init_poolmanager(self, *args, **kwargs):
+            self.poolmanager = PoolManager(ssl_version=ssl.PROTOCOL_TLSv1, *args, **kwargs)
+
     def __init__(self, serveraddr, port):
         self.serveraddr = serveraddr
         self.port = port
 
+        self.session = requests.Session()
+        self.session.verify = False
+        self.session.mount('https://', self.TLSAdapter())
+
     def send(self, data, protocol):
         response = self._make_request(protocol, data)
-        return ET.XML(response.content)
+        return etree.XML(response.content)
 
     def _make_request(self, protocol, data):
-        return requests.post(
+        return self.session.post(
             url='https://%(serveraddr)s:%(port)s/api/%(protocol)s/xml' % {
                 'serveraddr': self.serveraddr,
                 'port': self.port,
@@ -67,9 +123,11 @@ class Request(object):
                 'Content-Type': 'text/xml',
                 'Accept': '*/*',
                 'Cache-Control': 'no-cache'
-            },
-            verify=False
+            }
         )
+
+    def get(self, *args, **kwargs):
+        return self.session.get(*args, **kwargs)
 
 
 class Element(object):
@@ -81,8 +139,8 @@ class Element(object):
         self.attr_dict = {}
 
     def __str__(self):
-        return ET.tostring(
-            ET.Element(self.request_tag, self.attr_dict)
+        return etree.tostring(
+            etree.Element(self.request_tag, self.attr_dict)
         )
 
 
@@ -180,17 +238,17 @@ class NexposeClient(object):
         self.session_id = None
 
     def login(self):
-        response = self.send(
+        response = self._send(
             LoginElement(self.username, self.password)
         )
-        logger.info('Login with "{}"'.format(self.username))
+        logger.info('Login with "{0}"'.format(self.username))
         self.session_id = response.attrib['session-id']
 
     def logout(self):
-        self.send(LogoutElement())
-        logger.info('Logout "{}"'.format(self.username))
+        self._send(LogoutElement())
+        logger.info('Logout "{0}"'.format(self.username))
 
-    def send(self, elem, protocol=VERSION_1_2):
+    def _send(self, elem, protocol=VERSION_1_2):
         sync_id = str(random.randint(1, 1000))
         if isinstance(elem, SessionElement):
             elem.attr_dict['session-id'] = self.session_id
@@ -198,11 +256,11 @@ class NexposeClient(object):
 
         response = self.request.send(str(elem), protocol)
         if response.tag != elem.response_tag:
-            raise Exception("Wrong API answer:\n{}".format(
-                ET.tostring(response)))
+            raise Exception("Wrong API answer:\n{0}".format(
+                etree.tostring(response)))
 
         if protocol == VERSION_1_2 and isinstance(elem, SessionElement) and response.attrib['sync-id'] != sync_id:
-            raise Exception('Different sync-id from request "{}" and response "{}"'.format(
+            raise Exception('Different sync-id from request "{0}" and response "{1}"'.format(
                 sync_id, response.attrib['sync-id']
             ))
 
@@ -218,37 +276,37 @@ class NexposeClient(object):
     def vulnerability_listing(self):
 
         elem = VulnerabilityListingElement()
-        response = self.send(elem)
+        response = self._send(elem)
         return response
 
     def vulnerability_details(self, vuln_id):
         elem = VulnerabilityDetailsElement(vuln_id)
-        response = self.send(elem)
+        response = self._send(elem)
         return VulnerabilityDetailInstance(response)
 
     def report_listing(self):
         elem = ReportListingElement()
-        response = self.send(elem, VERSION_1_1)
+        response = self._send(elem, VERSION_1_1)
         return response
 
     def report_config(self, config_id):
         elem = ReportConfigElement(config_id)
-        response = self.send(elem, VERSION_1_1)
+        response = self._send(elem, VERSION_1_1)
         return response.find('ReportConfig')
 
     def report_template_listing(self):
         elem = ReportTemplateListingElement()
-        response = self.send(elem, VERSION_1_1)
+        response = self._send(elem, VERSION_1_1)
         return response
 
     def get_report(self, uri):
-        url = 'https://{}:{}/{}'.format(
+        url = 'https://{0}:{1}/{2}'.format(
             self.host, self.port, uri
         )
-        response = requests.get(url, verify=False, cookies={
+        response = self.request.get(url, cookies={
             'nexposeCCSessionID': self.session_id
         })
-        return ET.XML(response.content)
+        return etree.XML(response.content)
 
     def create_exception_for_device(self, vuln_id, device_id):
         elem = VulnerabilityExceptionCreateElement(
@@ -256,10 +314,10 @@ class NexposeClient(object):
             reason=ExceptionReason.COMPENSATING_CONTROL,
             scope=ExceptionScope.ALL_INSTANCES_ON_SPECIFIC_ASSET,
             device_id=device_id)
-        response = self.send(elem)
+        response = self._send(elem)
         return response.get('exception-id')
 
     def approve_exception(self, exception_id):
         elem = VulnerabilityExceptionApproveElement(exception_id)
-        response = self.send(elem)
+        response = self._send(elem)
         return response

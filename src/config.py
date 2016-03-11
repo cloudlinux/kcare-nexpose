@@ -10,6 +10,7 @@ logging.basicConfig(
     level=logging.INFO,
     filename=u'working.log')
 
+
 logging.getLogger().addHandler(logging.StreamHandler())
 
 logging.getLogger("requests").setLevel(logging.WARNING)

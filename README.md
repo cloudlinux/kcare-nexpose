@@ -1,11 +1,11 @@
 # Kcare-nexpose
-This small project can mark related vulnerabilities as exceptions in Nexpose from Kernelcare
+The script marks vulnerabilities detected by Nexpose, but patched by KernelCare as exceptions
 
 ### Installation
 
 ```sh
 $ pip install -r REQUIREMENTS
-$ cp src/config.yaml.example src/config.yaml
+$ cp src/config.yaml.template src/config.yaml
 $ vim src/config.yaml
 ```
 ### How to launch
