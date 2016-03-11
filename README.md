@@ -12,6 +12,6 @@ $ vim src/config.yaml
 
 ```sh
 $ cd src
-$ python2.7 main.py
+$ python main.py
 ```
 
