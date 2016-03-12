@@ -2,7 +2,7 @@ import logging
 import sys
 
 import config
-from nexpose_client import ReportSummaryStatus, NexposeClient
+from nexpose_client import ReportSummaryStatus, NexposeClient, ExceptionReason, ExceptionScope
 from parse import ns_xml
 from patches import KernelCarePortal
 
@@ -22,9 +22,35 @@ SUPPORTED_FORMATS = {
 logger = logging.getLogger(__name__)
 
 
+def get_generated_report(client, report):
+    """
+    Try to get generated report. If current report has status is GENERATED - return it,
+    else try to find report in history with status GENERATED
+
+    :param client: nexpose client
+    :param report: last report
+    :return: if found - report with status GENERATED else raise LookupError
+    """
+    if report.get('status') != ReportSummaryStatus.GENERATED:
+        for report in client.report_history(report.get('cfg-id')):
+            if report.get('status') == ReportSummaryStatus.GENERATED:
+                break
+        else:
+            raise LookupError('Generated report for name "{0}" not found'.format(
+                report.get('name')
+            ))
+
+    return report
+
+
 def main(report_name):
+
+    # get KC info about patched CVE
     eportal = KernelCarePortal(**config.config['kernelcare-eportal'])
-    instances = eportal.get_instances()
+    kc_info = eportal.get_cve_info()
+    if not kc_info:
+        logger.error('Empty information about kernelcare CVE')
+        sys.exit(1)
 
     with NexposeClient(**config.config['nexpose']) as client:
 
@@ -34,20 +60,27 @@ def main(report_name):
 
         for report in reports:
             if report.get('name') == report_name:
-                if report.get('status') != ReportSummaryStatus.GENERATED:
-                    logger.error('Report "{0}" is not generated'.format(report_name))
-                    sys.exit(1)
                 break
         else:
             logger.error('Report "{0}" not found'.format(report_name))
             sys.exit(1)
 
-        report_uri = report.get('report-URI')
+        # try to get generated report
+        try:
+            current_report = get_generated_report(client, report)
+        except LookupError:
+            logger.error('Report "{0}" is not generated'.format(report_name))
+            sys.exit(1)
+
+        report_uri = current_report.get('report-URI')
+
+        # get report config
+        report_config = client.report_config(current_report.get('cfg-id'))
+        logger.info('Get report config by name "{0}" with id "{1}"'.format(
+            current_report.get('name'), current_report.get('cfg-id')
+        ))
 
         # check supported formats
-        report_config = client.report_config(report.get('cfg-id'))
-        logger.info('Get report config: {0}'.format(report.get('cfg-id')))
-
         report_format = report_config.get('format')
         if report_format not in SUPPORTED_FORMATS.keys():
             logger.error('Report format "{0}" unsupported. Supported formats: "{1}"'.format(
@@ -55,36 +88,28 @@ def main(report_name):
             ))
             sys.exit(1)
 
-        # get KC info about patched CVE
-        kc_info = {}
-        for ip, kernel_id, level in instances:
-
-            if int(level) > 0:
-                cve_info = eportal.get_kernel_cve(kernel_id, level)
-                logger.info('Found {0} cve for ip "{1}" from Kernelcare'.format(
-                    len(cve_info), ip
-                ))
-
-                kc_info[ip] = cve_info
-
-        if not kc_info:
-            logger.error('Empty information about kernelcare CVE')
-            sys.exit(1)
-
         # get report & find related CVE
         root = client.get_report(report_uri)
         logger.info('Get report from uri - "{0}"'.format(report_uri))
         vulnerabilities = SUPPORTED_FORMATS[report_format](root, kc_info)
 
+        # Add vuln to exception list
         is_approve = config.config['nexpose']['is_approve']
         for vuln_id, device_id, ip in vulnerabilities:
-            exception_id = client.create_exception_for_device(vuln_id, device_id)
+            exception_id = client.create_exception_for_device(
+                vuln_id=vuln_id,
+                device_id=device_id,
+                reason=ExceptionReason.COMPENSATING_CONTROL,
+                scope=ExceptionScope.ALL_INSTANCES_ON_SPECIFIC_ASSET,
+                comment="Added by kcare-nexpose"
+            )
             logger.info('Mark vulnerability "{0}" for ip "{1}" as exception'.format(
                 vuln_id, ip
             ))
 
             if is_approve:
-                client.approve_exception(exception_id)
+                # Approve exception
+                client.approve_exception(exception_id, comment="Approved by kcare-nexpose")
                 logger.info('Approve exception "{0}" for ip "{1}"'.format(
                     vuln_id, ip
                 ))

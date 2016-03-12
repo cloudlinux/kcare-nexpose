@@ -18,6 +18,15 @@ Full list of types:
 - text
 """
 
+__author__ = 'Nikolay Telepenin'
+__copyright__ = "Cloud Linux Zug GmbH 2016, KernelCare Project"
+__credits__ = 'Nikolay Telepenin'
+__license__ = 'Apache License v2.0'
+__maintainer__ = 'Nikolay Telepenin'
+__email__ = 'ntelepenin@kernelcare.com'
+__status__ = 'beta'
+__version__ = '1.0'
+
 
 def ns_xml(root, kc_info):
     """
@@ -34,10 +43,12 @@ def ns_xml(root, kc_info):
         if ip in kc_info.keys():
             vulns = device.find('vulnerabilities')
             for vuln in vulns:
-                cve_set = set()
-                for item in vuln.findall('id'):
-                    if item.get('type') == 'cve':
-                        cve_set.add(item.text)
+
+                # for support python 2.6
+                # it can't find with 'id[@type="cve"]' and havn't iterfind
+                cve_set = set(item.text
+                              for item in vuln.findall('id')
+                              if item.get('type') == 'cve')
 
                 if cve_set and kc_info[ip] >= cve_set:
                     yield vuln.get('id'), device_id, ip

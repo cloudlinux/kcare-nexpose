@@ -37,6 +37,15 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
+__author__ = 'Nikolay Telepenin'
+__copyright__ = "Cloud Linux Zug GmbH 2016, KernelCare Project"
+__credits__ = 'Nikolay Telepenin'
+__license__ = 'Apache License v2.0'
+__maintainer__ = 'Nikolay Telepenin'
+__email__ = 'ntelepenin@kernelcare.com'
+__status__ = 'beta'
+__version__ = '1.0'
+
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 logger = logging.getLogger(__name__)
@@ -137,11 +146,15 @@ class Element(object):
 
     def __init__(self):
         self.attr_dict = {}
+        self.inner_elements = {}
 
     def __str__(self):
-        return etree.tostring(
-            etree.Element(self.request_tag, self.attr_dict)
-        )
+        root = etree.Element(tag=self.request_tag, attrib=self.attr_dict)
+        for tag, text in self.inner_elements.items():
+            el = etree.Element(tag=tag)
+            el.text = text
+            root.append(el)
+        return etree.tostring(root)
 
 
 class SessionElement(Element):
@@ -186,6 +199,17 @@ class ReportTemplateListingElement(SessionElement):
     response_tag = 'ReportTemplateListingResponse'
 
 
+class ReportHistoryElement(SessionElement):
+    request_tag = 'ReportHistoryRequest'
+    response_tag = 'ReportHistoryResponse'
+
+    def __init__(self, config_id):
+        super(ReportHistoryElement, self).__init__()
+        self.attr_dict = {
+            'reportcfg-id': config_id
+        }
+
+
 class VulnerabilityListingElement(SessionElement):
     request_tag = 'VulnerabilityListingRequest'
     response_tag = 'VulnerabilityListingResponse'
@@ -206,7 +230,7 @@ class VulnerabilityExceptionCreateElement(SessionElement):
     request_tag = 'VulnerabilityExceptionCreateRequest'
     response_tag = 'VulnerabilityExceptionCreateResponse'
 
-    def __init__(self, vuln_id, reason, scope, device_id=None):
+    def __init__(self, vuln_id, reason, scope, device_id=None, comment=None):
         super(VulnerabilityExceptionCreateElement, self).__init__()
         self.attr_dict = {
             'vuln-id': vuln_id,
@@ -214,16 +238,22 @@ class VulnerabilityExceptionCreateElement(SessionElement):
             'scope': scope,
             'device-id': device_id
         }
+        self.inner_elements = {
+            'comment': comment
+        }
 
 
 class VulnerabilityExceptionApproveElement(SessionElement):
     request_tag = 'VulnerabilityExceptionApproveRequest'
     response_tag = 'VulnerabilityExceptionApproveResponse'
 
-    def __init__(self, exception_id):
+    def __init__(self, exception_id, comment=None):
         super(VulnerabilityExceptionApproveElement, self).__init__()
         self.attr_dict = {
             'exception-id': exception_id
+        }
+        self.inner_elements = {
+            'comment': comment
         }
 
 
@@ -241,12 +271,12 @@ class NexposeClient(object):
         response = self._send(
             LoginElement(self.username, self.password)
         )
-        logger.info('Login with "{0}"'.format(self.username))
+        logger.info('Login in Nexpose Security Console with "{0}"'.format(self.username))
         self.session_id = response.attrib['session-id']
 
     def logout(self):
         self._send(LogoutElement())
-        logger.info('Logout "{0}"'.format(self.username))
+        logger.info('Logout from Nexpose Security Console "{0}"'.format(self.username))
 
     def _send(self, elem, protocol=VERSION_1_2):
         sync_id = str(random.randint(1, 1000))
@@ -289,8 +319,8 @@ class NexposeClient(object):
         response = self._send(elem, VERSION_1_1)
         return response
 
-    def report_config(self, config_id):
-        elem = ReportConfigElement(config_id)
+    def report_config(self, report_cfg_id):
+        elem = ReportConfigElement(report_cfg_id)
         response = self._send(elem, VERSION_1_1)
         return response.find('ReportConfig')
 
@@ -298,6 +328,12 @@ class NexposeClient(object):
         elem = ReportTemplateListingElement()
         response = self._send(elem, VERSION_1_1)
         return response
+
+    def report_history(self, report_cfg_id):
+        elem = ReportHistoryElement(report_cfg_id)
+        response = self._send(elem, VERSION_1_1)
+        # default reverse order
+        return iter(response)
 
     def get_report(self, uri):
         url = 'https://{0}:{1}/{2}'.format(
@@ -308,16 +344,21 @@ class NexposeClient(object):
         })
         return etree.XML(response.content)
 
-    def create_exception_for_device(self, vuln_id, device_id):
+    def create_exception_for_device(self, vuln_id, reason, scope, device_id, comment):
         elem = VulnerabilityExceptionCreateElement(
             vuln_id=vuln_id,
-            reason=ExceptionReason.COMPENSATING_CONTROL,
-            scope=ExceptionScope.ALL_INSTANCES_ON_SPECIFIC_ASSET,
-            device_id=device_id)
+            reason=reason,
+            scope=scope,
+            device_id=device_id,
+            comment=comment
+        )
         response = self._send(elem)
         return response.get('exception-id')
 
-    def approve_exception(self, exception_id):
-        elem = VulnerabilityExceptionApproveElement(exception_id)
+    def approve_exception(self, exception_id, comment):
+        elem = VulnerabilityExceptionApproveElement(
+            exception_id=exception_id,
+            comment=comment
+        )
         response = self._send(elem)
         return response
