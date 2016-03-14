@@ -16,7 +16,7 @@ def read(fname):
 setup(
     name='kcare-nexpose',
     license='Apache License v2.0',
-    version='1.0',
+    version='1.0.0',
     packages=['kcare_nexpose'],
     package_dir={'': 'src'},
     long_description=read('README.md'),
@@ -27,8 +27,8 @@ setup(
                 'but patched by KernelCare as exceptions',
     data_files=[
         ('share/doc/kcare-nexpose', ['README.md', 'REQUIREMENTS', 'LICENSE']),
-        ('local/etc', ['src/configs/kcare-nexpose.yml.template']),
-        ('local/bin', ['src/scripts/kcare-nexpose']),
+        ('/etc', ['src/configs/kcare-nexpose.yml.template']),
+        ('bin', ['src/scripts/kcare-nexpose']),
     ],
     install_requires=requirements,
     include_package_data=True,

@@ -3,6 +3,7 @@ Classes and functions for working with Kernelcare ePortal.
 """
 import logging
 import re
+
 import urllib2
 
 __author__ = 'Nikolay Telepenin'
@@ -12,7 +13,7 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Nikolay Telepenin'
 __email__ = 'ntelepenin@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.0'
+__version__ = '1.0.0'
 
 pattern = re.compile(r'(CVE-\d{4}-\d{4})', re.MULTILINE)
 

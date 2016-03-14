@@ -25,7 +25,7 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Nikolay Telepenin'
 __email__ = 'ntelepenin@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.0'
+__version__ = '1.0.0'
 
 
 def ns_xml(root, kc_info):
