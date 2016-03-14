@@ -28,8 +28,8 @@ rm -rf %{buildroot}
 
 %files
 %doc README.md REQUIREMENTS LICENSE
-%{python_sitelib}/config.py*
-%{python_sitelib}/config.yml.template
+%{python_sitelib}/configs/kcare-nexpose.yml.template*
+%{python_sitelib}/scripts/kcare-nexpose*
 %{python_sitelib}/kcare_nexpose-*.egg-info
 %{python_sitelib}/main.py*
 %{python_sitelib}/nexpose_client.py*

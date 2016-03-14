@@ -1,0 +1,34 @@
+# Nexpose section
+nexpose:
+
+  # Host to connect with Nexpose Security Console
+  host: 136.243.222.52
+
+  # Port to connect with Nexpose Security Console
+  port: 3780
+
+  # Username to auth with Nexpose Security Console
+  username: prefer
+
+  # Password to auth with Nexpose Security Console
+  password: prefer
+
+  # Report name which will be analyze for look up related CVE with kernelcare ePortal
+  report-name: kc-report
+
+  # If needed to approve exception. If it false - only finds and adds vulnerability in exception list
+  is_approve: true
+
+# Kernelcare ePortal section
+kernelcare-eportal:
+
+  # Host to connect with Kernelcare ePortal
+  host: 136.243.222.52
+
+  # Port to connect with Kernelcare ePortal
+  port: 80
+
+  # List of keys
+  keys:
+    - 0G0996952sTtCU4z
+    - hx5LO1n49zY5jp6B

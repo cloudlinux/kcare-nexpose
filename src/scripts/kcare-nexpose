@@ -1,0 +1,4 @@
+#!/usr/bin/env python
+from kcare_nexpose.main import main
+
+main()

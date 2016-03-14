@@ -4,6 +4,7 @@ The script marks vulnerabilities detected by Nexpose, but patched by KernelCare 
 ### Installation
 
 ```sh
+$ python setup.py install
 $ pip install -r REQUIREMENTS
 ```
 
@@ -17,16 +18,15 @@ The first you should generate report in Nexpose (see supported type below) and t
 in the config file.
 Also you need to specify other parameters:
 ```sh
-$ cp src/config.yaml.template src/config.yaml
-$ vim src/config.yaml
+$ cp /usr/local/etc/kcare-nexpose.yml.template /usr/local/etc/kcare-nexpose.yml
+$ vim /usr/local/etc/kcare-nexpose.yml
 ```
 
 
 ### How to launch
 
 ```sh
-$ cd src
-$ python main.py
+$ kcare-nexpose -c /usr/local/etc/kcare-nexpose.yml
 ```
 
 ### Supported type's reports

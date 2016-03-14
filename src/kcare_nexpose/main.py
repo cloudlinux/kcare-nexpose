@@ -1,7 +1,16 @@
+"""
+Entry point into script.
+
+Take a look help for usage:
+`python main.py -h`
+"""
+
 import logging
+import optparse
+import os
 import sys
 
-import config
+import yaml
 from nexpose_client import ReportSummaryStatus, NexposeClient, ExceptionReason, ExceptionScope
 from parse import ns_xml
 from patches import KernelCarePortal
@@ -18,6 +27,15 @@ __version__ = '1.0'
 SUPPORTED_FORMATS = {
     'ns-xml': ns_xml
 }
+
+logging.basicConfig(
+    format=u'%(levelname)-8s [%(asctime)s] %(message)s',
+    level=logging.INFO,
+    filename=u'working.log')
+
+logging.getLogger().addHandler(logging.StreamHandler())
+
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
@@ -43,16 +61,23 @@ def get_generated_report(client, report):
     return report
 
 
-def main(report_name):
+def process(config):
+    """
+    Processing data from Nexpose and Kernelcare ePortal.
+
+    :param config: config yml-file
+    :return:
+    """
+    report_name = config['nexpose']['report-name']
 
     # get KC info about patched CVE
-    eportal = KernelCarePortal(**config.config['kernelcare-eportal'])
+    eportal = KernelCarePortal(**config['kernelcare-eportal'])
     kc_info = eportal.get_cve_info()
     if not kc_info:
         logger.error('Empty information about kernelcare CVE')
         sys.exit(1)
 
-    with NexposeClient(**config.config['nexpose']) as client:
+    with NexposeClient(**config['nexpose']) as client:
 
         # find report by name
         reports = client.report_listing()
@@ -94,7 +119,7 @@ def main(report_name):
         vulnerabilities = SUPPORTED_FORMATS[report_format](root, kc_info)
 
         # Add vuln to exception list
-        is_approve = config.config['nexpose']['is_approve']
+        is_approve = config['nexpose']['is_approve']
         for vuln_id, device_id, ip in vulnerabilities:
             exception_id = client.create_exception_for_device(
                 vuln_id=vuln_id,
@@ -118,5 +143,36 @@ def main(report_name):
             logger.info('Don\'t forget regenerate "{0}" report'.format(report_name))
 
 
+def main():
+    parser = optparse.OptionParser(
+        description='The script marks vulnerabilities detected by Nexpose, '
+                    'but patched by KernelCare as exceptions.',
+        usage="%prog", version="1.0")
+    parser.add_option(
+        '-c',
+        '--config',
+        dest='config',
+        help='Configuration file',
+        default='')
+
+    option, args = parser.parse_args()
+
+    if not option.config:
+        logger.error('Config file should be using'.format(
+            option.config
+        ))
+        sys.exit(1)
+    if not os.path.isfile(option.config):
+        logger.error('Config file not found in "{0}"'.format(
+            option.config
+        ))
+        sys.exit(1)
+
+    with open(option.config, 'r') as yaml_config:
+        config = yaml.load(yaml_config)
+
+    process(config)
+
+
 if __name__ == '__main__':
-    main(config.config['nexpose']['report-name'])
+    main()
