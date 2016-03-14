@@ -4,6 +4,8 @@ The script marks vulnerabilities detected by Nexpose, but patched by KernelCare 
 ### Installation
 
 ```sh
+$ git clone https://github.com/cloudlinux/kcare-nexpose.git
+$ cd kcare-nexpose/
 $ python setup.py install
 $ pip install -r REQUIREMENTS
 ```
