@@ -3,18 +3,18 @@
 Name:		kcare-nexpose
 Version:	1.0.0
 Release:	1%{?dist}
-Summary:	The script marks vulnerabilities detected by Nexpose, but patched by KernelCare as exceptions.
+Summary:	The script marks vulnerabilities detected by Nexpose, but patched by KernelCare as exceptions
 
 Group:		Applications/System
 License:	Apache License v2.0
 URL:		http://www.kernelcare.com
 Source0:	%{name}-%{version}.tar.gz
 
-BuildRequires:	python-requests PyYAML
+BuildRequires:	python-setuptools python-requests PyYAML
 Requires:	python-requests PyYAML
 
 %description
-The script marks vulnerabilities detected by Nexpose, but patched by KernelCare as exceptions.
+The script marks vulnerabilities detected by Nexpose, but patched by KernelCare as exceptions
 
 %prep
 %setup -q %{name}-%{version}
@@ -28,13 +28,16 @@ rm -rf %{buildroot}
 
 %files
 %doc README.md REQUIREMENTS LICENSE
-%{python_sitelib}/configs/kcare-nexpose.yml.template*
-%{python_sitelib}/scripts/kcare-nexpose*
+/usr/local/etc/kcare-nexpose.yml.template
+/usr/local/bin/kcare-nexpose
 %{python_sitelib}/kcare_nexpose-*.egg-info
-%{python_sitelib}/main.py*
-%{python_sitelib}/nexpose_client.py*
-%{python_sitelib}/parse.py*
-%{python_sitelib}/patches.py*
+%dir %{python_sitelib}/kcare_nexpose
+%{python_sitelib}/kcare_nexpose/__init__.py*
+%{python_sitelib}/kcare_nexpose/main.py*
+%{python_sitelib}/kcare_nexpose/nexpose_client.py*
+%{python_sitelib}/kcare_nexpose/parse.py*
+%{python_sitelib}/kcare_nexpose/patches.py*
+
 
 %changelog
 * Fri Mar 11 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.0-1

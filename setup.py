@@ -26,9 +26,8 @@ setup(
     description='The script marks vulnerabilities detected by Nexpose, '
                 'but patched by KernelCare as exceptions',
     data_files=[
-        ('share/doc/kcare-nexpose', ['README.md', 'REQUIREMENTS', 'LICENSE']),
-        ('/etc', ['src/configs/kcare-nexpose.yml.template']),
-        ('bin', ['src/scripts/kcare-nexpose']),
+        ('local/etc', ['src/configs/kcare-nexpose.yml.template']),
+        ('local/bin', ['src/scripts/kcare-nexpose']),
     ],
     install_requires=requirements,
     include_package_data=True,
