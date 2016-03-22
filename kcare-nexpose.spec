@@ -10,6 +10,8 @@ License:	Apache License v2.0
 URL:		http://www.kernelcare.com
 Source0:	%{name}-%{version}.tar.gz
 
+BuildArch:   noarch
+
 BuildRequires:	python-setuptools python-requests PyYAML
 Requires:	python-requests PyYAML
 
