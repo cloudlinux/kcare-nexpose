@@ -11,7 +11,12 @@ import os
 import sys
 
 import yaml
-from nexpose_client import ReportSummaryStatus, NexposeClient, ExceptionReason, ExceptionScope
+
+from nexpose_client import (
+    ReportSummaryStatus,
+    NexposeClient,
+    ExceptionReason,
+    ExceptionScope)
 from parse import ns_xml
 from patches import KernelCarePortal
 
@@ -42,8 +47,8 @@ logger = logging.getLogger(__name__)
 
 def get_generated_report(client, report):
     """
-    Try to get generated report. If current report has status is GENERATED - return it,
-    else try to find report in history with status GENERATED
+    Try to get generated report. If current report has status is GENERATED -
+    return it, else try to find report in history with status GENERATED
 
     :param client: nexpose client
     :param report: last report
@@ -54,9 +59,10 @@ def get_generated_report(client, report):
             if report.get('status') == ReportSummaryStatus.GENERATED:
                 break
         else:
-            raise LookupError('Generated report for name "{0}" not found'.format(
-                report.get('name')
-            ))
+            raise LookupError(
+                'Generated report for name "{0}" not found'.format(
+                    report.get('name')
+                ))
 
     return report
 
@@ -108,9 +114,12 @@ def process(config):
         # check supported formats
         report_format = report_config.get('format')
         if report_format not in SUPPORTED_FORMATS.keys():
-            logger.error('Report format "{0}" unsupported. Supported formats: "{1}"'.format(
-                report_format, SUPPORTED_FORMATS.keys()
-            ))
+            logger.error(
+                'Report format "{0}" unsupported. '
+                'Supported formats: "{1}"'.format(
+                    report_format,
+                    SUPPORTED_FORMATS.keys()
+                ))
             sys.exit(1)
 
         # get report & find related CVE
@@ -128,19 +137,22 @@ def process(config):
                 scope=ExceptionScope.ALL_INSTANCES_ON_SPECIFIC_ASSET,
                 comment="Added by kcare-nexpose"
             )
-            logger.info('Mark vulnerability "{0}" for ip "{1}" as exception'.format(
-                vuln_id, ip
-            ))
+            logger.info(
+                'Mark vulnerability "{0}" for ip "{1}" as exception'.format(
+                    vuln_id, ip
+                ))
 
             if is_approve:
                 # Approve exception
-                client.approve_exception(exception_id, comment="Approved by kcare-nexpose")
+                client.approve_exception(exception_id,
+                                         comment="Approved by kcare-nexpose")
                 logger.info('Approve exception "{0}" for ip "{1}"'.format(
                     vuln_id, ip
                 ))
 
         if is_approve:
-            logger.info('Don\'t forget regenerate "{0}" report'.format(report_name))
+            logger.info('Don\'t forget regenerate "{0}" report'.format(
+                report_name))
 
 
 def main():

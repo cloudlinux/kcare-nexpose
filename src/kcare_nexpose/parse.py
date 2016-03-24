@@ -1,5 +1,6 @@
 """
-Functions for parsing reports and comparing CVE info in reports and in Kernelcare
+Functions for parsing reports and comparing CVE info in reports and in the
+Kernelcare ePortal
 
 What type of reports is implemented:
 - ns-xml

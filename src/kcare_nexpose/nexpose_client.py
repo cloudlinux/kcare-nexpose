@@ -36,6 +36,7 @@ from abc import ABCMeta
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from requests.packages.urllib3.poolmanager import PoolManager
 
 __author__ = 'Nikolay Telepenin'
 __copyright__ = "Cloud Linux Zug GmbH 2016, KernelCare Project"
@@ -52,8 +53,6 @@ logger = logging.getLogger(__name__)
 
 VERSION_1_1 = '1.1'
 VERSION_1_2 = '1.2'
-
-from requests.packages.urllib3.poolmanager import PoolManager
 
 
 class ReportSummaryStatus(object):
@@ -106,7 +105,8 @@ class Request(object):
     class TLSAdapter(HTTPAdapter):
         # For support python 2.6
         def init_poolmanager(self, *args, **kwargs):
-            self.poolmanager = PoolManager(ssl_version=ssl.PROTOCOL_TLSv1, *args, **kwargs)
+            self.poolmanager = PoolManager(ssl_version=ssl.PROTOCOL_TLSv1,
+                                           *args, **kwargs)
 
     def __init__(self, serveraddr, port):
         self.serveraddr = serveraddr
@@ -271,12 +271,14 @@ class NexposeClient(object):
         response = self._send(
             LoginElement(self.username, self.password)
         )
-        logger.info('Login in Nexpose Security Console with "{0}"'.format(self.username))
+        logger.info('Login in Nexpose Security Console with "{0}"'.format(
+            self.username))
         self.session_id = response.attrib['session-id']
 
     def logout(self):
         self._send(LogoutElement())
-        logger.info('Logout from Nexpose Security Console "{0}"'.format(self.username))
+        logger.info('Logout from Nexpose Security Console "{0}"'.format(
+            self.username))
 
     def _send(self, elem, protocol=VERSION_1_2):
         sync_id = str(random.randint(1, 1000))
@@ -289,10 +291,13 @@ class NexposeClient(object):
             raise Exception("Wrong API answer:\n{0}".format(
                 etree.tostring(response)))
 
-        if protocol == VERSION_1_2 and isinstance(elem, SessionElement) and response.attrib['sync-id'] != sync_id:
-            raise Exception('Different sync-id from request "{0}" and response "{1}"'.format(
-                sync_id, response.attrib['sync-id']
-            ))
+        if protocol == VERSION_1_2 and isinstance(elem, SessionElement) and \
+                response.attrib['sync-id'] != sync_id:
+            raise Exception(
+                'Different sync-id from request "{0}" '
+                'and response "{1}"'.format(
+                    sync_id, response.attrib['sync-id']
+                ))
 
         return response
 
@@ -344,7 +349,8 @@ class NexposeClient(object):
         })
         return etree.XML(response.content)
 
-    def create_exception_for_device(self, vuln_id, reason, scope, device_id, comment):
+    def create_exception_for_device(self, vuln_id, reason, scope, device_id,
+                                    comment):
         elem = VulnerabilityExceptionCreateElement(
             vuln_id=vuln_id,
             reason=reason,

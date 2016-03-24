@@ -89,16 +89,17 @@ class KernelCarePortal(object):
                 patch_id = kernel_id, level
                 if cve_cache.get(patch_id):
                     cve_info = cve_cache[patch_id]
-                    logger.info('Found {0} cve for ip "{1}" from local cache'.format(
-                        len(cve_info), ip
-                    ))
+                    logger.info(
+                        'Found {0} cve for ip "{1}" from local cache'.format(
+                            len(cve_info), ip
+                        ))
                 else:
 
                     cve_info = self.get_kernel_cve(kernel_id, level)
                     cve_cache[patch_id] = cve_info
-                    logger.info('Found {0} cve for ip "{1}" from Kernelcare ePortal'.format(
-                        len(cve_info), ip
-                    ))
+                    logger.info(
+                        'Found {0} cve for ip "{1}" from '
+                        'Kernelcare ePortal'.format(len(cve_info), ip))
 
                 kc_info[ip] = cve_info
 
