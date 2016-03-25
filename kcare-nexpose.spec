@@ -45,5 +45,5 @@ rm -rf %{buildroot}
 * Fri Mar 11 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.0-1
 - initial build for Cloud Linux
 
-* Fri Mar 11 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.1-1
+* Fri Mar 25 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.1-1
 - Remove requests from requirements
