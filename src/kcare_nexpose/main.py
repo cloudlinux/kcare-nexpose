@@ -27,7 +27,7 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Nikolay Telepenin'
 __email__ = 'ntelepenin@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 SUPPORTED_FORMATS = {
     'ns-xml': ns_xml
@@ -39,8 +39,6 @@ logging.basicConfig(
     filename=u'working.log')
 
 logging.getLogger().addHandler(logging.StreamHandler())
-
-logging.getLogger("requests").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +157,7 @@ def main():
     parser = optparse.OptionParser(
         description='The script marks vulnerabilities detected by Nexpose, '
                     'but patched by KernelCare as exceptions.',
-        usage="%prog", version="1.0.0")
+        usage="%prog", version="1.0.1")
     parser.add_option(
         '-c',
         '--config',

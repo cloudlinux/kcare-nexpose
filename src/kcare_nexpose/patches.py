@@ -1,6 +1,7 @@
 """
 Classes and functions for working with Kernelcare ePortal.
 """
+import json
 import logging
 import re
 
@@ -13,7 +14,7 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Nikolay Telepenin'
 __email__ = 'ntelepenin@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 pattern = re.compile(r'(CVE-\d{4}-\d{4})', re.MULTILINE)
 
@@ -51,7 +52,7 @@ class KernelCarePortal(object):
         Get all devices in Kernelcare ePortal
         :return: list of tuple (ip, kernel_id, level)
         """
-        result = set()
+        result = []
         for key in self.keys:
             req = urllib2.Request(
                 url='http://{0}:{1}/admin/api/kcare/patchset/{2}'.format(
@@ -60,15 +61,12 @@ class KernelCarePortal(object):
             )
 
             response = urllib2.urlopen(req)
-            result_by_key = set()
-            for line in response.readlines():
-                ip, kernel_id, level = line.strip().split(',')
-                result_by_key.add((ip, kernel_id, level))
+            data = json.loads(response.read())['data']
 
             logger.info('Found {0} instances from "{1}" key'.format(
-                len(result_by_key), key
+                len(data), key
             ))
-            result.update(result_by_key)
+            result.extend(data)
 
         return result
 
@@ -85,7 +83,7 @@ class KernelCarePortal(object):
         cve_cache = {}
         for ip, kernel_id, level in instances:
 
-            if int(level) > 0:
+            if level and int(level) > 0:
                 patch_id = kernel_id, level
                 if cve_cache.get(patch_id):
                     cve_info = cve_cache[patch_id]

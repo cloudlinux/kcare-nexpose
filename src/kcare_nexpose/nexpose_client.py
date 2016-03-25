@@ -30,13 +30,10 @@ with NexposeClient('localhost', 3780, "username", "password") as client:
 import logging
 import random
 import ssl
+import urllib2
 import xml.etree.ElementTree as etree
 from abc import ABCMeta
-
-import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-from requests.packages.urllib3.poolmanager import PoolManager
+from functools import wraps
 
 __author__ = 'Nikolay Telepenin'
 __copyright__ = "Cloud Linux Zug GmbH 2016, KernelCare Project"
@@ -45,14 +42,25 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Nikolay Telepenin'
 __email__ = 'ntelepenin@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.0.0'
-
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+__version__ = '1.0.1'
 
 logger = logging.getLogger(__name__)
 
 VERSION_1_1 = '1.1'
 VERSION_1_2 = '1.2'
+
+
+# for untrusted ssl connection without requests
+def sslwrap(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        kwargs['ssl_version'] = ssl.PROTOCOL_TLSv1
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+ssl.wrap_socket = sslwrap(ssl.wrap_socket)
 
 
 class ReportSummaryStatus(object):
@@ -102,32 +110,22 @@ class VulnerabilityDetailInstance(object):
 
 
 class Request(object):
-    class TLSAdapter(HTTPAdapter):
-        # For support python 2.6
-        def init_poolmanager(self, *args, **kwargs):
-            self.poolmanager = PoolManager(ssl_version=ssl.PROTOCOL_TLSv1,
-                                           *args, **kwargs)
-
     def __init__(self, serveraddr, port):
         self.serveraddr = serveraddr
         self.port = port
 
-        self.session = requests.Session()
-        self.session.verify = False
-        self.session.mount('https://', self.TLSAdapter())
-
     def send(self, data, protocol):
-        response = self._make_request(protocol, data)
-        return etree.XML(response.content)
+        request = self._make_request(protocol)
+        response = urllib2.urlopen(request, data)
+        return etree.XML(response.read())
 
-    def _make_request(self, protocol, data):
-        return self.session.post(
+    def _make_request(self, protocol):
+        return urllib2.Request(
             url='https://%(serveraddr)s:%(port)s/api/%(protocol)s/xml' % {
                 'serveraddr': self.serveraddr,
                 'port': self.port,
                 'protocol': protocol
             },
-            data=data,
             headers={
                 'Content-Type': 'text/xml',
                 'Accept': '*/*',
@@ -344,10 +342,13 @@ class NexposeClient(object):
         url = 'https://{0}:{1}/{2}'.format(
             self.host, self.port, uri
         )
-        response = self.request.get(url, cookies={
-            'nexposeCCSessionID': self.session_id
-        })
-        return etree.XML(response.content)
+
+        opener = urllib2.build_opener()
+        opener.addheaders.append(('Cookie', 'nexposeCCSessionID={0}'.format(
+            self.session_id
+        )))
+        response = opener.open(url)
+        return etree.XML(response.read())
 
     def create_exception_for_device(self, vuln_id, reason, scope, device_id,
                                     comment):

@@ -31,7 +31,7 @@ rm -rf %{buildroot}
 %files
 %doc README.md REQUIREMENTS LICENSE
 /usr/local/etc/kcare-nexpose.yml.template
-/usr/local/bin/kcare-nexpose
+/usr/bin/kcare-nexpose
 %{python_sitelib}/kcare_nexpose-*.egg-info
 %dir %{python_sitelib}/kcare_nexpose
 %{python_sitelib}/kcare_nexpose/__init__.py*
@@ -44,3 +44,6 @@ rm -rf %{buildroot}
 %changelog
 * Fri Mar 11 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.0-1
 - initial build for Cloud Linux
+
+* Fri Mar 11 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.1-1
+- Remove requests from requirements

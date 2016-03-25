@@ -24,6 +24,12 @@ $ cp /usr/local/etc/kcare-nexpose.yml.template /usr/local/etc/kcare-nexpose.yml
 $ vim /usr/local/etc/kcare-nexpose.yml
 ```
 
+**Important!**
+IP addressed in Nexpose and KC ePortal (Kernelcare ePortal) should be the **same**. If you use Nexpose and KC ePortal
+on different instances you should to check Nexpose and KC ePortal not using *localhost (127.0.0.1)*.
+Otherwise kcare-nexpose can mark vulnerability wrong: it's just analyze ip addresses from Nexpose and
+KC ePortal.
+
 
 ### How to launch
 
