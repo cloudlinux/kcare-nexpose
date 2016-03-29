@@ -7,7 +7,7 @@ The script marks vulnerabilities detected by Nexpose, but patched by KernelCare 
 
 To install kcare-nexpose, start with the minimal image of EL6:
 ```sh
-# cat > /etc/yum.repos.d/kcare-eportal.repo <<EOL
+$ cat > /etc/yum.repos.d/kcare-eportal.repo <<EOL
 [kcare-eportal]
 name=kcare-eportal
 baseurl=http://repo.eportal.kernelcare.com/x86_64/
@@ -19,7 +19,7 @@ EOL
 
 Install kcare-nexpose:
 ```sh
-# yum install kcare-nexpose
+$ yum install kcare-nexpose
 ```
 
 ### From github
