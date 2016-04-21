@@ -1,7 +1,7 @@
 # Kcare-nexpose
 The script marks vulnerabilities detected by Nexpose, but patched by KernelCare as exceptions.
 
-# Table of Contents
+## Table of Contents
 * [Installation](https://github.com/cloudlinux/kcare-nexpose/blob/master/README.md#installation)
     * [From YUM repo](https://github.com/cloudlinux/kcare-nexpose/blob/master/README.md#from-yum-repository)
     * [From github](https://github.com/cloudlinux/kcare-nexpose/blob/master/README.md#from-github)
@@ -120,4 +120,5 @@ patch-server:
   keys:
     - 0G0996952sTtCU4z
     - hx5LO1n49zY5jp6B
+
 ```
