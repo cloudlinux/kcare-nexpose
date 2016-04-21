@@ -62,7 +62,7 @@ KC ePortal not using *localhost (127.0.0.1)*.
 Otherwise kcare-nexpose can mark vulnerability wrong: 
 it's just analyze ip addresses from Nexpose and KC ePortal.
 
-Kcare-nexpose **wont work** if you use [NAT|https://en.wikipedia.org/wiki/Network_address_translation] 
+Kcare-nexpose **wont work** if you use [NAT](https://en.wikipedia.org/wiki/Network_address_translation) 
 for server where installed kernelcare and use original patch server.
 
 
