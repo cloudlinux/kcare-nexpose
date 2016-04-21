@@ -1,6 +1,7 @@
 """
 Functions for parsing reports and comparing CVE info in reports and in the
-Kernelcare ePortal
+patch server (for example KernelCare eportal or offical Kernelcare patch
+server)
 
 What type of reports is implemented:
 - ns-xml
@@ -26,7 +27,7 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Nikolay Telepenin'
 __email__ = 'ntelepenin@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 
 def ns_xml(root, kc_info):

@@ -31,6 +31,7 @@ import logging
 import random
 import ssl
 import urllib2
+import urlparse
 import xml.etree.ElementTree as etree
 from abc import ABCMeta
 from functools import wraps
@@ -42,7 +43,7 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Nikolay Telepenin'
 __email__ = 'ntelepenin@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 logger = logging.getLogger(__name__)
 
@@ -339,8 +340,9 @@ class NexposeClient(object):
         return iter(response)
 
     def get_report(self, uri):
-        url = 'https://{0}:{1}/{2}'.format(
-            self.host, self.port, uri
+        url = urlparse.urljoin(
+            'https://{0}:{1}'.format(self.host, self.port),
+            uri
         )
 
         opener = urllib2.build_opener()

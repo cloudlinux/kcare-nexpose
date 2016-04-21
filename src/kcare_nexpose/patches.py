@@ -1,11 +1,12 @@
 """
-Classes and functions for working with Kernelcare ePortal.
+Classes and functions for working with Kernelcare patch server.
 """
 import json
 import logging
 import re
 
 import urllib2
+import urlparse
 
 __author__ = 'Nikolay Telepenin'
 __copyright__ = "Cloud Linux Zug GmbH 2016, KernelCare Project"
@@ -14,33 +15,33 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Nikolay Telepenin'
 __email__ = 'ntelepenin@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 pattern = re.compile(r'(CVE-\d{4}-\d{4})', re.MULTILINE)
 
 logger = logging.getLogger(__name__)
 
 
-class KernelCarePortal(object):
-    def __init__(self, host, port, keys):
-        self.host = host
-        self.port = port
+class PatchServer(object):
+    def __init__(self, server, keys, **kwargs):
+        self.server = server
         self.keys = keys
+        self.patches_info = kwargs.get('patches-info', self.server)
 
         self._cve_cache = {}
 
     def get_kernel_cve(self, kernel_id, level):
         """
-        Get CVE info from kernel id and level from Kernelcare ePortal
+        Get CVE info from kernel id and level from patch server
 
-        :param kernel_id: Kernel identifier in ePortal
-        :param level: Kernel level patch in ePortal
+        :param kernel_id: Kernel identifier in patch server
+        :param level: Kernel level patch in patch server
         :return: set of CVE
         """
 
         req = urllib2.Request(
-            url='http://{0}:{1}/{2}/{3}/kpatch.info'.format(
-                self.host, self.port, kernel_id, level
+            url='{0}/{1}/{2}/kpatch.info'.format(
+                self.patches_info, kernel_id, level
             )
         )
         response = urllib2.urlopen(req)
@@ -49,31 +50,38 @@ class KernelCarePortal(object):
 
     def get_instances(self):
         """
-        Get all devices in Kernelcare ePortal
+        Get all devices from Kernelcare patch server
         :return: list of tuple (ip, kernel_id, level)
         """
         result = []
         for key in self.keys:
             req = urllib2.Request(
-                url='http://{0}:{1}/admin/api/kcare/patchset/{2}'.format(
-                    self.host, self.port, key
+                urlparse.urljoin(
+                    '{0}/{1}'.format(self.server, key),
+                    key
                 )
             )
 
             response = urllib2.urlopen(req)
-            data = json.loads(response.read())['data']
+            response_data = response.read()
+            if not response_data:
+                logger.info('Not found instances from "{0}" key'.format(
+                    key
+                ))
+            else:
+                data = json.loads(response_data)['data']
 
-            logger.info('Found {0} instances from "{1}" key'.format(
-                len(data), key
-            ))
-            result.extend(data)
+                logger.info('Found {0} instances from "{1}" key'.format(
+                    len(data), key
+                ))
+                result.extend(data)
 
         return result
 
     def get_cve_info(self):
         """
         Return instances with their CVE info
-        1. Get all registerd instances in the Kernelcare ePortal
+        1. Get all registered instances from Kernelcare patch server
         2. For each instances try to look up cve info
 
         :return: dict {ip: set of CVE}
@@ -97,7 +105,8 @@ class KernelCarePortal(object):
                     cve_cache[patch_id] = cve_info
                     logger.info(
                         'Found {0} cve for ip "{1}" from '
-                        'Kernelcare ePortal'.format(len(cve_info), ip))
+                        'patch server "{2}"'.format(
+                            len(cve_info), ip, self.patches_info))
 
                 kc_info[ip] = cve_info
 

@@ -18,7 +18,7 @@ from nexpose_client import (
     ExceptionReason,
     ExceptionScope)
 from parse import ns_xml
-from patches import KernelCarePortal
+from patches import PatchServer
 
 __author__ = 'Nikolay Telepenin'
 __copyright__ = "Cloud Linux Zug GmbH 2016, KernelCare Project"
@@ -27,7 +27,7 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Nikolay Telepenin'
 __email__ = 'ntelepenin@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 SUPPORTED_FORMATS = {
     'ns-xml': ns_xml
@@ -67,7 +67,7 @@ def get_generated_report(client, report):
 
 def process(config):
     """
-    Processing data from Nexpose and Kernelcare ePortal.
+    Processing data from Nexpose and patch server
 
     :param config: config yml-file
     :return:
@@ -75,8 +75,8 @@ def process(config):
     report_name = config['nexpose']['report-name']
 
     # get KC info about patched CVE
-    eportal = KernelCarePortal(**config['kernelcare-eportal'])
-    kc_info = eportal.get_cve_info()
+    patch_server = PatchServer(**config['patch-server'])
+    kc_info = patch_server.get_cve_info()
     if not kc_info:
         logger.error('Empty information about kernelcare CVE')
         sys.exit(1)
@@ -157,7 +157,7 @@ def main():
     parser = optparse.OptionParser(
         description='The script marks vulnerabilities detected by Nexpose, '
                     'but patched by KernelCare as exceptions.',
-        usage="%prog", version="1.0.1")
+        usage="%prog", version="1.0.2")
     parser.add_option(
         '-c',
         '--config',

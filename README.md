@@ -41,7 +41,8 @@ $ pip install -r REQUIREMENTS
 ```
 
 ## How it works
-The script finds related CVE in Kernelcare ePortal and report in the Nexpose.
+The script finds related CVE from patch server (for example Kernelcare ePortal or
+original patch server https://cln.cloudlinux.com/api/kcare) and report in the Nexpose.
 If all CVE is patched for one vulnerability in Kernelcare script adds this vulnerability as 
  exception in Nexpose. The script also can approve this exception in the Nexpose 
 (approve by default, if you wan't approve please set to false `is_approve` in the config).
@@ -55,10 +56,14 @@ $ vim /usr/local/etc/kcare-nexpose.yml
 ```
 
 **Important!**
-IP addressed in Nexpose and KC ePortal (Kernelcare ePortal) should be the **same**. If you use Nexpose and KC ePortal
-on different instances you should to check Nexpose and KC ePortal not using *localhost (127.0.0.1)*.
-Otherwise kcare-nexpose can mark vulnerability wrong: it's just analyze ip addresses from Nexpose and
-KC ePortal.
+IP addressed in the Nexpose and int the patch server should be the **same**. 
+If you use Nexpose and KC ePortal on different instances you should to check Nexpose and 
+KC ePortal not using *localhost (127.0.0.1)*.
+Otherwise kcare-nexpose can mark vulnerability wrong: 
+it's just analyze ip addresses from Nexpose and KC ePortal.
+
+Kcare-nexpose **wont work** if you use [NAT|https://en.wikipedia.org/wiki/Network_address_translation] 
+for server where installed kernelcare and use original patch server.
 
 
 ## How to launch
@@ -95,18 +100,24 @@ nexpose:
   # If needed to approve exception. If it false - only finds and adds vulnerability in the exception list
   is_approve: true
 
-# Kernelcare ePortal section
-kernelcare-eportal:
+# Patch server section
+patch-server:
 
-  # Host to connect with Kernelcare ePortal
-  host: 178.204.226.194
+  # URL to connect with Kernelcare ePortal
+  # For kernelcare ePortal use "http://<kernel-care-eportal-domain-name-or-ip>/admin/api/kcare/patchset/"
+  # For original server use "https://cln.cloudlinux.com/api/kcare/patchset/"
+   server: https://cln.cloudlinux.com/api/kcare/patchset/
 
-  # Port to connect with Kernelcare ePortal
-  port: 80
+  # Server for patch sets
+  # For patch sets from server Kernelcare ePortal use domain name
+  # (or ip addresses)
+  # patches-info: http://<kernel-care-eportal-domain-name-or-ip>
 
-  # List of keys from KernelCare ePortal
+  # For patch sets from original server
+  patches-info: http://patches.kernelcare.com/
+
+  # List of keys
   keys:
     - 0G0996952sTtCU4z
     - hx5LO1n49zY5jp6B
-
 ```
