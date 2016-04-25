@@ -48,5 +48,5 @@ rm -rf %{buildroot}
 * Fri Mar 25 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.1-1
 - Remove requests from requirements
 
-* Apr 21 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.2-1
+* Tue Apr 21 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.2-1
 - Support original server https://cln.cloudlinux.com for getting licenses and patches
