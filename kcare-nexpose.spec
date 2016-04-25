@@ -40,13 +40,12 @@ rm -rf %{buildroot}
 %{python_sitelib}/kcare_nexpose/parse.py*
 %{python_sitelib}/kcare_nexpose/patches.py*
 
-
 %changelog
-* Fri Mar 11 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.0-1
-- initial build for Cloud Linux
+* Thu Apr 21 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.2-1
+- Support original server https://cln.cloudlinux.com for getting licenses and patches
 
 * Fri Mar 25 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.1-1
 - Remove requests from requirements
 
-* Tue Apr 21 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.2-1
-- Support original server https://cln.cloudlinux.com for getting licenses and patches
+* Fri Mar 11 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.0-1
+- initial build for Cloud Linux
