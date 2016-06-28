@@ -1,7 +1,7 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
 Name:		kcare-nexpose
-Version:	1.0.2
+Version:	1.0.3
 Release:	1%{?dist}
 Summary:	The script marks vulnerabilities detected by Nexpose, but patched by KernelCare as exceptions
 
@@ -41,6 +41,9 @@ rm -rf %{buildroot}
 %{python_sitelib}/kcare_nexpose/patches.py*
 
 %changelog
+* Sun Jun 28 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.3-1
+- Added ckeck for kernel_id from Kernelcare ePortal
+
 * Thu Apr 21 2016 Nikolay Telepenin <ntelepenin@cloudlinux com> - 1.0.2-1
 - Support original server https://cln.cloudlinux.com for getting licenses and patches
 
