@@ -91,23 +91,28 @@ class PatchServer(object):
         cve_cache = {}
         for ip, kernel_id, level in instances:
 
-            if level and int(level) > 0:
-                patch_id = kernel_id, level
-                if cve_cache.get(patch_id):
-                    cve_info = cve_cache[patch_id]
-                    logger.info(
-                        'Found {0} cve for ip "{1}" from local cache'.format(
-                            len(cve_info), ip
-                        ))
-                else:
+            # kernel_id is required
+            if kernel_id:
+                if level and int(level) > 0:
+                    patch_id = kernel_id, level
+                    if cve_cache.get(patch_id):
+                        cve_info = cve_cache[patch_id]
+                        logger.info(
+                            'Found {0} cve for ip "{1}" from local cache'.format(
+                                len(cve_info), ip
+                            ))
+                    else:
 
-                    cve_info = self.get_kernel_cve(kernel_id, level)
-                    cve_cache[patch_id] = cve_info
-                    logger.info(
-                        'Found {0} cve for ip "{1}" from '
-                        'patch server "{2}"'.format(
-                            len(cve_info), ip, self.patches_info))
+                        cve_info = self.get_kernel_cve(kernel_id, level)
+                        cve_cache[patch_id] = cve_info
+                        logger.info(
+                            'Found {0} cve for ip "{1}" from '
+                            'patch server "{2}"'.format(
+                                len(cve_info), ip, self.patches_info))
 
-                kc_info[ip] = cve_info
+                    kc_info[ip] = cve_info
+            else:
+                logger.info(
+                    'Not found hash of kernel for ip "{0}"'.format(ip))
 
         return kc_info
