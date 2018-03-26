@@ -17,20 +17,21 @@ from nexpose_client import (
     NexposeClient,
     ExceptionReason,
     ExceptionScope)
-from parse import ns_xml
+from parse import ns_xml, raw_xml_v2
 from patches import PatchServer
 
 __author__ = 'Nikolay Telepenin'
-__copyright__ = "Cloud Linux Zug GmbH 2016, KernelCare Project"
+__copyright__ = "Cloud Linux Zug GmbH 2018, KernelCare Project"
 __credits__ = 'Nikolay Telepenin'
 __license__ = 'Apache License v2.0'
-__maintainer__ = 'Nikolay Telepenin'
-__email__ = 'ntelepenin@kernelcare.com'
+__maintainer__ = 'Igor Seletskiy'
+__email__ = 'iseletsk@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.0.3'
+__version__ = '1.1.0'
 
 SUPPORTED_FORMATS = {
-    'ns-xml': ns_xml
+    'ns-xml': ns_xml,
+    'raw-xml-v2': raw_xml_v2
 }
 
 logging.basicConfig(

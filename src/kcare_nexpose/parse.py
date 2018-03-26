@@ -38,6 +38,7 @@ def ns_xml(root, kc_info):
     :param kc_info: dict - key is device-id, value is set of CVE
     :return: Iterator tuple (vulnerability-id, device-id, ip address)
     """
+
     devices = root.find('devices')
     for device in devices:
         device_id = device.get('id')
@@ -50,7 +51,47 @@ def ns_xml(root, kc_info):
                 # it can't find with 'id[@type="cve"]' and havn't iterfind
                 cve_set = set(item.text
                               for item in vuln.findall('id')
-                              if item.get('type') == 'cve')
+                              if str(item.get('type')).lower() == 'cve')
 
                 if cve_set and kc_info[ip] >= cve_set:
                     yield vuln.get('id'), device_id, ip
+
+def raw_xml_v2(root, kc_info):
+    """
+    Parsin RAW XML v2  report and comparing CVE info in the KernelCare
+
+    :param root: root XML element in the report
+    :param kc_info: dict - key is device-id, value is set of CVE
+    :return: Iterator tuple (vulnerability-id, device-id, hostname
+    """
+
+    # Init vulnerability definitions
+    vulns = {}
+    vulnNodes = root.findall('./VulnerabilityDefinitions/vulnerability')
+    for v in vulnNodes:
+        id = v.get('id')
+        cve = v.find("references/reference/[@source='CVE']")
+        if cve is not None:
+            vulns[id]=cve.text
+
+
+    nodes = root.findall('./nodes/node')
+    for node in nodes:
+        # get node IP, device_id & names. we want ot use names in the future
+        ip=node.get('address')
+        device_id=node.get('device-id')
+        names=[]
+        namesNode = node.findall('./names/name')
+        for name in namesNode:
+            names.append(name.text)
+
+        if ip in kc_info.keys():
+
+            testsNode = node.findall('./tests/test')
+            for test in testsNode:
+                id = test.get('id')
+                if id in vulns:
+                    cve = vulns[id]
+                    if cve in kc_info[ip]:
+                        yield id, device_id, ip
+

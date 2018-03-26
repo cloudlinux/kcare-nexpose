@@ -74,7 +74,8 @@ $ kcare-nexpose -c /usr/local/etc/kcare-nexpose.yml
 
 ## Supported type's reports
 
- - ns-xml
+ - ns-xml  Nexpose<sup>tm</sup> Simple XML Export
+ - raw-xml-v2 XML Export 2.0 (recommended)
  
 ## YAML config file description
 
@@ -99,6 +100,9 @@ nexpose:
 
   # If needed to approve exception. If it false - only finds and adds vulnerability in the exception list
   is_approve: true
+  
+  # Report type (XML Export 2.0 recommended).
+  format: raw-xml-v2
 
 # Patch server section
 patch-server:

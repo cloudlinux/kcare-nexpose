@@ -117,8 +117,9 @@ class Request(object):
 
     def send(self, data, protocol):
         request = self._make_request(protocol)
-        response = urllib2.urlopen(request, data)
-        return etree.XML(response.read())
+        response = urllib2.urlopen(request, data, context=ssl._create_unverified_context())
+        s=response.read()
+        return etree.XML(s)
 
     def _make_request(self, protocol):
         return urllib2.Request(
@@ -131,7 +132,7 @@ class Request(object):
                 'Content-Type': 'text/xml',
                 'Accept': '*/*',
                 'Cache-Control': 'no-cache'
-            }
+            },
         )
 
     def get(self, *args, **kwargs):
@@ -345,7 +346,8 @@ class NexposeClient(object):
             uri
         )
 
-        opener = urllib2.build_opener()
+
+        opener = urllib2.build_opener(urllib2.HTTPSHandler(context=ssl._create_unverified_context()))
         opener.addheaders.append(('Cookie', 'nexposeCCSessionID={0}'.format(
             self.session_id
         )))
