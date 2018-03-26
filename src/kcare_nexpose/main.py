@@ -137,7 +137,7 @@ def process(config):
                 comment="Added by kcare-nexpose"
             )
             logger.info(
-                'Mark vulnerability "{0}" for ip "{1}" as exception'.format(
+                'Mark vulnerability "{0}" for "{1}" as exception'.format(
                     vuln_id, ip
                 ))
 
@@ -145,7 +145,7 @@ def process(config):
                 # Approve exception
                 client.approve_exception(exception_id,
                                          comment="Approved by kcare-nexpose")
-                logger.info('Approve exception "{0}" for ip "{1}"'.format(
+                logger.info('Approve exception "{0}" for "{1}"'.format(
                     vuln_id, ip
                 ))
 

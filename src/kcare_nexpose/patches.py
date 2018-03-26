@@ -54,13 +54,13 @@ class PatchServer(object):
         :return: list of tuple (ip, kernel_id, level)
         """
         result = []
+
+        if self.server.endswith('=') or self.server.endswith('/'):
+            format='{0}{1}'
+        else:
+            format='{0}/{1]'
         for key in self.keys:
-            req = urllib2.Request(
-                urlparse.urljoin(
-                    '{0}/{1}'.format(self.server, key),
-                    key
-                )
-            )
+            req = urllib2.Request(format.format(self.server, key))
 
             response = urllib2.urlopen(req)
             response_data = response.read()
@@ -69,7 +69,14 @@ class PatchServer(object):
                     key
                 ))
             else:
-                data = json.loads(response_data)['data']
+                json_data = json.loads(response_data)
+                if 'data' in json_data:
+                    data = json_data['data']
+                else:
+                    data=[]
+                    for row in json_data:
+                        data.append([row['ip'], row['kernel_id'],
+                                     row['patch_level'], row['host']])
 
                 logger.info('Found {0} instances from "{1}" key'.format(
                     len(data), key
@@ -87,10 +94,12 @@ class PatchServer(object):
         :return: dict {ip: set of CVE}
         """
         instances = self.get_instances()
-        kc_info = {}
+        kc_info = {'USE_HOSTNAME': False}
         cve_cache = {}
-        for ip, kernel_id, level in instances:
-
+        for row in instances:
+            ip = row[0]
+            kernel_id = row[1]
+            level = row[2]
             # kernel_id is required
             if kernel_id:
                 if level and int(level) > 0:
@@ -111,6 +120,9 @@ class PatchServer(object):
                                 len(cve_info), ip, self.patches_info))
 
                     kc_info[ip] = cve_info
+                    if len(row) > 3:
+                        kc_info[row[3]] = cve_info
+                        kc_info['USE_HOSTNAME']=True
             else:
                 logger.info(
                     'Not found hash of kernel for ip "{0}"'.format(ip))

@@ -110,7 +110,9 @@ patch-server:
   # URL to connect with Kernelcare ePortal
   # For kernelcare ePortal use "http://<kernel-care-eportal-domain-name-or-ip>/admin/api/kcare/patchset/"
   # For original server use "https://cln.cloudlinux.com/api/kcare/patchset/"
-   server: https://cln.cloudlinux.com/api/kcare/patchset/
+  # To use hostnames instead of IPs (requires raw-xml-v2): 
+  # https://cln.cloudlinux.com/api/kcare/patchset.json?key=
+   server: https://cln.cloudlinux.com/api/kcare/patchset.json?key=
 
   # Server for patch sets
   # For patch sets from server Kernelcare ePortal use domain name

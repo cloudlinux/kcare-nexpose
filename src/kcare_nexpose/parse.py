@@ -84,6 +84,7 @@ def raw_xml_v2(root, kc_info):
         namesNode = node.findall('./names/name')
         for name in namesNode:
             names.append(name.text)
+        names.append(ip)
 
         if ip in kc_info.keys():
 
@@ -92,6 +93,12 @@ def raw_xml_v2(root, kc_info):
                 id = test.get('id')
                 if id in vulns:
                     cve = vulns[id]
-                    if cve in kc_info[ip]:
-                        yield id, device_id, ip
+                    if kc_info['USE_HOSTNAME']:
+                        for name in names:
+                            if cve in kc_info[name]:
+                                yield id, device_id, name
+                                break
+                    else:
+                        if cve is not None:
+                            vulns[id] = cve.text
 

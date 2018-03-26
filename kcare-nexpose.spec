@@ -41,6 +41,9 @@ rm -rf %{buildroot}
 %{python_sitelib}/kcare_nexpose/patches.py*
 
 %changelog
+* Mon Mar 26 2018 Igor Seletskiy <iseletsk@kernelcare.com> - 1.1.1-1
+- raw_xml_v2 report format uses names when avaialble
+
 * Sun Mar 25 2018 Igor Seletskiy <iseletsk@kernelcare.com> - 1.1.0-1
 - Added support for raw_xml_v2 report format
 - Weakened SSL checks
