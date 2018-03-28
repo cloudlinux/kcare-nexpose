@@ -16,7 +16,7 @@ def read(fname):
 setup(
     name='kcare-nexpose',
     license='Apache License v2.0',
-    version='1.0.3',
+    version='1.1.2',
     packages=['kcare_nexpose'],
     package_dir={'': 'src'},
     long_description=read('README.md'),

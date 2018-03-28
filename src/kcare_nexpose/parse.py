@@ -58,7 +58,7 @@ def ns_xml(root, kc_info):
 
 def raw_xml_v2(root, kc_info):
     """
-    Parsin RAW XML v2  report and comparing CVE info in the KernelCare
+    Parse RAW XML v2  report and comparing CVE info in the KernelCare
 
     :param root: root XML element in the report
     :param kc_info: dict - key is device-id, value is set of CVE
@@ -70,35 +70,34 @@ def raw_xml_v2(root, kc_info):
     vulnNodes = root.findall('./VulnerabilityDefinitions/vulnerability')
     for v in vulnNodes:
         id = v.get('id')
-        cve = v.find("references/reference/[@source='CVE']")
-        if cve is not None:
-            vulns[id]=cve.text
+        refs = v.findall("references/reference")
+        for cve in refs:
+            if str(cve.get('source')).lower() == 'cve':
+                vulns[id]=cve.text
 
 
     nodes = root.findall('./nodes/node')
     for node in nodes:
         # get node IP, device_id & names. we want ot use names in the future
-        ip=node.get('address')
-        device_id=node.get('device-id')
-        names=[]
-        namesNode = node.findall('./names/name')
-        for name in namesNode:
-            names.append(name.text)
-        names.append(ip)
 
-        if ip in kc_info.keys():
+        kc_key=None
+        if kc_info['USE_HOSTNAME']:
+            for name in node.findall('./names/name'):
+                if name.text in kc_info:
+                    kc_key=name.text
+                    break
+        else:
+            ip = node.get('address')
+            if ip in kc_info:
+                kc_key=ip
+
+        if kc_key:
+            device_id = node.get('device-id')
 
             testsNode = node.findall('./tests/test')
             for test in testsNode:
                 id = test.get('id')
                 if id in vulns:
-                    cve = vulns[id]
-                    if kc_info['USE_HOSTNAME']:
-                        for name in names:
-                            if cve in kc_info[name]:
-                                yield id, device_id, name
-                                break
-                    else:
-                        if cve is not None:
-                            vulns[id] = cve.text
+                    if vulns[id] in kc_info[kc_key]:
+                        yield id, device_id, kc_key
 

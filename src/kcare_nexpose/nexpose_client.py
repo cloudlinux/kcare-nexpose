@@ -37,13 +37,13 @@ from abc import ABCMeta
 from functools import wraps
 
 __author__ = 'Nikolay Telepenin'
-__copyright__ = "Cloud Linux Zug GmbH 2016, KernelCare Project"
+__copyright__ = "Cloud Linux Zug GmbH 2017, KernelCare Project"
 __credits__ = 'Nikolay Telepenin'
 __license__ = 'Apache License v2.0'
 __maintainer__ = 'Nikolay Telepenin'
 __email__ = 'ntelepenin@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.0.3'
+__version__ = '1.1.2'
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,8 @@ class Request(object):
 
     def send(self, data, protocol):
         request = self._make_request(protocol)
-        response = urllib2.urlopen(request, data, context=ssl._create_unverified_context())
+        # , context=ssl._create_unverified_context() -- for no ssl/python2.7+
+        response = urllib2.urlopen(request, data)
         s=response.read()
         return etree.XML(s)
 
@@ -346,8 +347,8 @@ class NexposeClient(object):
             uri
         )
 
-
-        opener = urllib2.build_opener(urllib2.HTTPSHandler(context=ssl._create_unverified_context()))
+        #urllib2.HTTPSHandler(context=ssl._create_unverified_context()) -- for ssl handling/ python 2.7+
+        opener = urllib2.build_opener()
         opener.addheaders.append(('Cookie', 'nexposeCCSessionID={0}'.format(
             self.session_id
         )))
