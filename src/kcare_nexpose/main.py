@@ -27,7 +27,7 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Igor Seletskiy'
 __email__ = 'iseletsk@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.1.0'
+__version__ = '1.1.3'
 
 SUPPORTED_FORMATS = {
     'ns-xml': ns_xml,

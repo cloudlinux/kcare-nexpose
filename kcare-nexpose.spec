@@ -1,7 +1,7 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
 Name:		kcare-nexpose
-Version:	1.1.2
+Version:	1.1.3
 Release:	1%{?dist}
 Summary:	The script marks vulnerabilities detected by Nexpose, but patched by KernelCare as exceptions
 
@@ -41,6 +41,9 @@ rm -rf %{buildroot}
 %{python_sitelib}/kcare_nexpose/patches.py*
 
 %changelog
+* Fri Mar 30 2018 Igor Seletskiy <iseletsk@kernelcare.com> - 1.1.3-1
+- add support for parsing new format/longer CVE numbers
+
 * Wed Mar 28 2018 Igor Seletskiy <iseletsk@kernelcare.com> - 1.1.2-1
 - fixed raw_xml_v2 parser
 

@@ -17,7 +17,7 @@ __email__ = 'ntelepenin@kernelcare.com'
 __status__ = 'beta'
 __version__ = '1.0.3'
 
-pattern = re.compile(r'(CVE-\d{4}-\d{4})', re.MULTILINE)
+pattern = re.compile(r'(CVE-\d{4}-\d{4,15})', re.MULTILINE)
 
 logger = logging.getLogger(__name__)
 
