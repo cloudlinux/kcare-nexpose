@@ -27,7 +27,7 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Igor Seletskiy'
 __email__ = 'iseletsk@kernelcare.com'
 __status__ = 'beta'
-__version__ = '1.1.3'
+__version__ = '1.1.4'
 
 SUPPORTED_FORMATS = {
     'ns-xml': ns_xml,
@@ -106,12 +106,22 @@ def process(config):
 
         # get report config
         report_config = client.report_config(current_report.get('cfg-id'))
+        if report_config is None:
+            logger.info('Unable to retrieve report config '\
+                         '"{0}" with id "{1}"'.format(
+                current_report.get('name'), current_report.get('cfg-id')))
         logger.info('Get report config by name "{0}" with id "{1}"'.format(
             current_report.get('name'), current_report.get('cfg-id')
         ))
 
         # check supported formats
-        report_format = report_config.get('format')
+        if report_config is None:
+            try:
+                report_format=config['nexpose']['format']
+            except:
+                report_format='raw-xml-v2'
+        else:
+            report_format = report_config.get('format')
         if report_format not in SUPPORTED_FORMATS.keys():
             logger.error(
                 'Report format "{0}" unsupported. '
