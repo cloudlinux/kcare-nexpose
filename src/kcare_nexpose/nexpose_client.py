@@ -110,6 +110,17 @@ class VulnerabilityDetailInstance(object):
         return result
 
 
+def create_ssl_context():
+    """
+    THis is needed for python 2.7+ to bypass invalid certificate exceptions
+    :return: unverified SSL context if supported, None otherwise
+    """
+    try:
+        return ssl._create_unverified_context()
+    except:
+        return None
+
+
 class Request(object):
     def __init__(self, serveraddr, port):
         self.serveraddr = serveraddr
@@ -117,9 +128,9 @@ class Request(object):
 
     def send(self, data, protocol):
         request = self._make_request(protocol)
-        # , context=ssl._create_unverified_context() -- for no ssl/python2.7+
-        response = urllib2.urlopen(request, data)
-        s=response.read()
+        response = urllib2.urlopen(request, data, context=create_ssl_context())
+
+        s = response.read()
         return etree.XML(s)
 
     def _make_request(self, protocol):
@@ -258,6 +269,22 @@ class VulnerabilityExceptionApproveElement(SessionElement):
         }
 
 
+class VulnerabilityExceptionListingElement(SessionElement):
+    request_tag = "VulnerabilityExceptionListingRequest"
+    response_tag = "VulnerabilityExceptionListingResponse"
+
+
+class VulnerabilityExceptionDeleteElement(SessionElement):
+    request_tag = "VulnerabilityExceptionDeleteRequest"
+    response_tag = "VulnerabilityExceptionDeleteResponse"
+
+    def __init__(self, exception_id):
+        super(VulnerabilityExceptionDeleteElement, self).__init__()
+        self.attr_dict = {
+            'exception-id': exception_id
+        }
+
+
 class NexposeClient(object):
     def __init__(self, host, port, username, password, *args, **kwargs):
         self.request = Request(host, port)
@@ -320,6 +347,16 @@ class NexposeClient(object):
         response = self._send(elem)
         return VulnerabilityDetailInstance(response)
 
+    def exceptions_listing(self):
+        elem = VulnerabilityExceptionListingElement()
+        response = self._send(elem)
+        return response
+
+    def exception_delete(self, exception_id):
+        elem = VulnerabilityExceptionDeleteElement(exception_id)
+        response = self._send(elem)
+        return response
+
     def report_listing(self):
         elem = ReportListingElement()
         response = self._send(elem, VERSION_1_1)
@@ -347,8 +384,8 @@ class NexposeClient(object):
             uri
         )
 
-        #urllib2.HTTPSHandler(context=ssl._create_unverified_context()) -- for ssl handling/ python 2.7+
-        opener = urllib2.build_opener()
+        opener = urllib2.build_opener(urllib2.HTTPSHandler
+                                      (context=create_ssl_context()))
         opener.addheaders.append(('Cookie', 'nexposeCCSessionID={0}'.format(
             self.session_id
         )))

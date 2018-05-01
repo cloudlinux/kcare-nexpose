@@ -101,7 +101,10 @@ nexpose:
 
   # If needed to approve exception. If it false - only finds and adds vulnerability in the exception list
   is_approve: true
-  
+
+  # If you want to delete old exceptions. If it is false - old exceptions will not be deleted
+  delete_old: true
+
   # Report type (XML Export 2.0 recommended).
   format: raw-xml-v2
 

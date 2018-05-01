@@ -34,6 +34,10 @@ SUPPORTED_FORMATS = {
     'raw-xml-v2': raw_xml_v2
 }
 
+# This is used as a comment to submit exception
+# We also use it later on to remove exceptions
+EXCEPTION_COMMENT = "Added by kcare-nexpose"
+
 logging.basicConfig(
     format=u'%(levelname)-8s [%(asctime)s] %(message)s',
     level=logging.INFO,
@@ -64,6 +68,38 @@ def get_generated_report(client, report):
                 ))
 
     return report
+
+
+def filter_exceptions(exceptions):
+    """
+    Filter out exceptions that were not added by kcare-nexpose
+
+    :param exceptions: list of exceptions
+    :return: list of exception-ids that were added by kcare-nexpose
+    """
+    result = []
+    for el in exceptions.findall('./VulnerabilityException'):
+        comment = el.find('./submitter-comment').text
+        status = el.get('status')
+        if comment == EXCEPTION_COMMENT and status != 'Deleted':
+            result.append(el.get('exception-id'))
+    return result
+
+
+def delete_old_exceptions(client):
+    """
+    Delete OLD vulnerability exceptions
+
+    :param client: initialized nexpose client
+    :return: None
+    """
+    # find exceptions
+    exceptions = client.exceptions_listing()
+    exception_ids = filter_exceptions(exceptions)
+    for eid in exception_ids:
+        logger.info("Removing exception ({0}) ".format(eid))
+        client.exception_delete(eid)
+    logger.info("Removed Old Exceptions")
 
 
 def process(config):
@@ -107,9 +143,10 @@ def process(config):
         # get report config
         report_config = client.report_config(current_report.get('cfg-id'))
         if report_config is None:
-            logger.info('Unable to retrieve report config '\
-                         '"{0}" with id "{1}"'.format(
-                current_report.get('name'), current_report.get('cfg-id')))
+            logger.info('Unable to retrieve report config '
+                        '"{0}" with id "{1}"'.format
+                        (current_report.get('name'),
+                         current_report.get('cfg-id')))
         logger.info('Get report config by name "{0}" with id "{1}"'.format(
             current_report.get('name'), current_report.get('cfg-id')
         ))
@@ -117,9 +154,9 @@ def process(config):
         # check supported formats
         if report_config is None:
             try:
-                report_format=config['nexpose']['format']
-            except:
-                report_format='raw-xml-v2'
+                report_format = config['nexpose']['format']
+            except Exception:
+                report_format = 'raw-xml-v2'
         else:
             report_format = report_config.get('format')
         if report_format not in SUPPORTED_FORMATS.keys():
@@ -136,6 +173,10 @@ def process(config):
         logger.info('Get report from uri - "{0}"'.format(report_uri))
         vulnerabilities = SUPPORTED_FORMATS[report_format](root, kc_info)
 
+        # Remove old vulnerabilities?
+        if config['nexpose']['delete_old']:
+            delete_old_exceptions(client)
+
         # Add vuln to exception list
         is_approve = config['nexpose']['is_approve']
         for vuln_id, device_id, ip in vulnerabilities:
@@ -144,7 +185,7 @@ def process(config):
                 device_id=device_id,
                 reason=ExceptionReason.COMPENSATING_CONTROL,
                 scope=ExceptionScope.ALL_INSTANCES_ON_SPECIFIC_ASSET,
-                comment="Added by kcare-nexpose"
+                comment=EXCEPTION_COMMENT
             )
             logger.info(
                 'Mark vulnerability "{0}" for "{1}" as exception'.format(

@@ -19,6 +19,10 @@ nexpose:
   # If needed to approve exception. If it false - only finds and adds vulnerability in exception list
   is_approve: true
 
+  # If you want to delete old exceptions. If it is false - old exceptions will not be deleted
+  delete_old: true
+
+
 # Patch server section
 patch-server:
 
