@@ -27,7 +27,7 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Igor Seletskiy'
 __email__ = 'iseletsk@kernelcare.com'
 __status__ = 'production'
-__version__ = '1.2.1'
+__version__ = '1.2.2'
 
 SUPPORTED_FORMATS = {
     'ns-xml': ns_xml,
@@ -79,10 +79,13 @@ def filter_exceptions(exceptions):
     """
     result = []
     for el in exceptions.findall('./VulnerabilityException'):
-        comment = el.find('./submitter-comment').text
-        status = el.get('status')
-        if comment == EXCEPTION_COMMENT and status != 'Deleted':
-            result.append(el.get('exception-id'))
+        try:
+            comment = el.find('./submitter-comment').text
+            status = el.get('status')
+            if comment == EXCEPTION_COMMENT and status != 'Deleted':
+                result.append(el.get('exception-id'))
+        except AttributeError:
+            pass
     return result
 
 
