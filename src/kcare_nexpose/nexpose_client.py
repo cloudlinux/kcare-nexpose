@@ -128,7 +128,11 @@ class Request(object):
 
     def send(self, data, protocol):
         request = self._make_request(protocol)
-        response = urllib2.urlopen(request, data, context=create_ssl_context())
+        context = create_ssl_context()
+        if context:
+            response = urllib2.urlopen(request, data, context=context)
+        else:
+            response = urllib2.urlopen(request, data)
 
         s = response.read()
         return etree.XML(s)
@@ -384,8 +388,13 @@ class NexposeClient(object):
             uri
         )
 
-        opener = urllib2.build_opener(urllib2.HTTPSHandler
-                                      (context=create_ssl_context()))
+        context = create_ssl_context()
+        if context:
+            opener = urllib2.build_opener(urllib2.HTTPSHandler
+                                          (context=create_ssl_context()))
+        else:
+            opener = urllib2.build_opener(urllib2.HTTPSHandler)
+
         opener.addheaders.append(('Cookie', 'nexposeCCSessionID={0}'.format(
             self.session_id
         )))

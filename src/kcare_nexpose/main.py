@@ -26,8 +26,8 @@ __credits__ = 'Nikolay Telepenin'
 __license__ = 'Apache License v2.0'
 __maintainer__ = 'Igor Seletskiy'
 __email__ = 'iseletsk@kernelcare.com'
-__status__ = 'beta'
-__version__ = '1.1.4'
+__status__ = 'production'
+__version__ = '1.2.1'
 
 SUPPORTED_FORMATS = {
     'ns-xml': ns_xml,
