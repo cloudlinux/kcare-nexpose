@@ -27,7 +27,7 @@ __license__ = 'Apache License v2.0'
 __maintainer__ = 'Igor Seletskiy'
 __email__ = 'iseletsk@kernelcare.com'
 __status__ = 'production'
-__version__ = '1.2.2'
+__version__ = '1.2.3'
 
 SUPPORTED_FORMATS = {
     'ns-xml': ns_xml,
@@ -183,25 +183,31 @@ def process(config):
         # Add vuln to exception list
         is_approve = config['nexpose']['is_approve']
         for vuln_id, device_id, ip in vulnerabilities:
-            exception_id = client.create_exception_for_device(
-                vuln_id=vuln_id,
-                device_id=device_id,
-                reason=ExceptionReason.COMPENSATING_CONTROL,
-                scope=ExceptionScope.ALL_INSTANCES_ON_SPECIFIC_ASSET,
-                comment=EXCEPTION_COMMENT
-            )
-            logger.info(
-                'Mark vulnerability "{0}" for "{1}" as exception'.format(
-                    vuln_id, ip
-                ))
+            try:
+                exception_id = client.create_exception_for_device(
+                    vuln_id=vuln_id,
+                    device_id=device_id,
+                    reason=ExceptionReason.COMPENSATING_CONTROL,
+                    scope=ExceptionScope.ALL_INSTANCES_ON_SPECIFIC_ASSET,
+                    comment=EXCEPTION_COMMENT
+                )
+                logger.info(
+                    'Mark vulnerability "{0}" for "{1}" as exception'.format(
+                        vuln_id, ip
+                    ))
 
-            if is_approve:
-                # Approve exception
-                client.approve_exception(exception_id,
-                                         comment="Approved by kcare-nexpose")
-                logger.info('Approve exception "{0}" for "{1}"'.format(
-                    vuln_id, ip
-                ))
+                if is_approve:
+                    # Approve exception
+                    client.approve_exception(exception_id,
+                                             comment="Approved by kcare-nexpose")
+                    logger.info('Approve exception "{0}" for "{1}"'.format(
+                        vuln_id, ip
+                    ))
+            except Exception as e:
+                if "An exception for all instances of " in e.message:
+                    logger.info("Exception already exists")
+                else:
+                    raise e
 
         if is_approve:
             logger.info('Don\'t forget regenerate "{0}" report'.format(

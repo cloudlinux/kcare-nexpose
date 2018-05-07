@@ -1,7 +1,7 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
 Name:		kcare-nexpose
-Version:	1.2.2
+Version:	1.2.3
 Release:	1%{?dist}
 Summary:	The script marks vulnerabilities detected by Nexpose, but patched by KernelCare as exceptions
 
@@ -41,6 +41,9 @@ rm -rf %{buildroot}
 %{python_sitelib}/kcare_nexpose/patches.py*
 
 %changelog
+* Sun May 6 2018 Igor Seletskiy <iseletsk@kernelcare.com> - 1.2.3-1
+- Don't fail on a case where exception already exists
+
 * Fri May 4 2018 Igor Seletskiy <iseletsk@kernelcare.com> - 1.2.2-1
 - Backward compatibility for SSL Handing for python 2.6
 - Fix for error on custom exceptions
