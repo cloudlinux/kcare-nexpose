@@ -20,6 +20,8 @@ Full list of types:
 - text
 """
 
+import logging
+
 __author__ = 'Nikolay Telepenin'
 __copyright__ = "Cloud Linux Zug GmbH 2016, KernelCare Project"
 __credits__ = 'Nikolay Telepenin'
@@ -29,6 +31,8 @@ __email__ = 'ntelepenin@kernelcare.com'
 __status__ = 'beta'
 __version__ = '1.0.3'
 
+
+logger = logging.getLogger(__name__)
 
 def ns_xml(root, kc_info):
     """
@@ -77,14 +81,16 @@ def raw_xml_v2(root, kc_info):
 
 
     nodes = root.findall('./nodes/node')
+    node_count = 0
+    matched_node_count = 0
     for node in nodes:
         # get node IP, device_id & names. we want ot use names in the future
-
+        node_count+=1
         kc_key=None
         if kc_info['USE_HOSTNAME']:
             for name in node.findall('./names/name'):
-                if name.text in kc_info:
-                    kc_key=name.text
+                if name.text.strip() in kc_info:
+                    kc_key=name.text.strip()
                     break
         else:
             ip = node.get('address')
@@ -92,6 +98,7 @@ def raw_xml_v2(root, kc_info):
                 kc_key=ip
 
         if kc_key:
+            matched_node_count+=1
             device_id = node.get('device-id')
 
             testsNode = node.findall('./tests/test')
@@ -100,4 +107,11 @@ def raw_xml_v2(root, kc_info):
                 if id in vulns:
                     if vulns[id] in kc_info[kc_key]:
                         yield id, device_id, kc_key
+
+    if kc_info['USE_HOSTNAME']:
+        logger.info('Using Hostnames to match servers')
+    else:
+        logger.info("Using IP only to match servers")
+    logger.info("Found {0} nodes in the report, matched {1}".format(node_count,
+                                                      matched_node_count))
 

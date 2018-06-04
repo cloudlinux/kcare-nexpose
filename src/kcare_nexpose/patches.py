@@ -97,7 +97,7 @@ class PatchServer(object):
         kc_info = {'USE_HOSTNAME': False}
         cve_cache = {}
         for row in instances:
-            ip = row[0]
+            ip = row[0].strip()
             kernel_id = row[1]
             level = row[2]
             # kernel_id is required
@@ -121,10 +121,9 @@ class PatchServer(object):
 
                     kc_info[ip] = cve_info
                     if len(row) > 3:
-                        kc_info[row[3]] = cve_info
+                        kc_info[row[3].strip()] = cve_info
                         kc_info['USE_HOSTNAME']=True
             else:
                 logger.info(
                     'Not found hash of kernel for ip "{0}"'.format(ip))
-
         return kc_info

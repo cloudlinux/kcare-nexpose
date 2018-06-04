@@ -150,9 +150,10 @@ def process(config):
                         '"{0}" with id "{1}"'.format
                         (current_report.get('name'),
                          current_report.get('cfg-id')))
-        logger.info('Get report config by name "{0}" with id "{1}"'.format(
-            current_report.get('name'), current_report.get('cfg-id')
-        ))
+        else:
+            logger.info('Get report config by name "{0}" with id "{1}"'.format(
+                current_report.get('name'), current_report.get('cfg-id')
+            ))
 
         # check supported formats
         if report_config is None:
@@ -170,6 +171,8 @@ def process(config):
                     SUPPORTED_FORMATS.keys()
                 ))
             sys.exit(1)
+
+        logger.info("Report format: "+report_format)
 
         # get report & find related CVE
         root = client.get_report(report_uri)

@@ -399,7 +399,12 @@ class NexposeClient(object):
             self.session_id
         )))
         response = opener.open(url)
-        return etree.XML(response.read())
+        txt = response.read()
+        # DEBUG #
+        # with open('/tmp/report.xml', 'r') as f:
+        #    txt=f.read()
+        # END DEBUG
+        return etree.XML(txt)
 
     def create_exception_for_device(self, vuln_id, reason, scope, device_id,
                                     comment):

@@ -1,7 +1,7 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
 Name:		kcare-nexpose
-Version:	1.2.3
+Version:	1.2.4
 Release:	1%{?dist}
 Summary:	The script marks vulnerabilities detected by Nexpose, but patched by KernelCare as exceptions
 
@@ -41,6 +41,11 @@ rm -rf %{buildroot}
 %{python_sitelib}/kcare_nexpose/patches.py*
 
 %changelog
+* Mon Jun 4 2018 Igor Seletskiy <iseletsk@kernelcare.com> - 1.2.4-1
+- Remove spaces around hostnames
+- Display number of nodes matched
+- Show if hostnames are used to match hosts
+
 * Sun May 6 2018 Igor Seletskiy <iseletsk@kernelcare.com> - 1.2.3-1
 - Don't fail on a case where exception already exists
 
