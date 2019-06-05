@@ -2,7 +2,7 @@
 
 Name:		kcare-nexpose
 Version:	1.2.5
-Release:	2%{?dist}
+Release:	3%{?dist}
 Summary:	The script marks vulnerabilities detected by Nexpose, but patched by KernelCare as exceptions
 
 Group:		Applications/System
@@ -41,7 +41,7 @@ rm -rf %{buildroot}
 %{python_sitelib}/kcare_nexpose/patches.py*
 
 %changelog
-* Mon Jun 5 2018 Telepenin Nikolay <iseletsk@kernelcare.com> - 1.2.5-2
+* Mon Jun 5 2018 Telepenin Nikolay <ntelepenin@kernelcare.com> - 1.2.5-3
 - Added verbosity for downloading/parsing report from nexpose 
 
 * Mon Jun 4 2018 Igor Seletskiy <iseletsk@kernelcare.com> - 1.2.4-1
