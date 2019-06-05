@@ -404,6 +404,7 @@ class NexposeClient(object):
         # with open('/tmp/report.xml', 'r') as f:
         #    txt=f.read()
         # END DEBUG
+        logger.info('The report is downloaded')
         return etree.XML(txt)
 
     def create_exception_for_device(self, vuln_id, reason, scope, device_id,
