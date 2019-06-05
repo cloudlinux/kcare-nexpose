@@ -177,8 +177,8 @@ def process(config):
         # get report & find related CVE
         logger.info('Get report from uri - "{0}"'.format(report_uri))
         root = client.get_report(report_uri)
-        logger.info('The report is parsed successfully'))
-        
+        logger.info('The report is parsed successfully')
+
         vulnerabilities = SUPPORTED_FORMATS[report_format](root, kc_info)
 
         # Remove old vulnerabilities?
