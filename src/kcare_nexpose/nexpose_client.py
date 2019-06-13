@@ -32,9 +32,13 @@ import random
 import ssl
 import urllib2
 import urlparse
-import xml.etree.ElementTree as etree
 from abc import ABCMeta
 from functools import wraps
+
+try:
+    from lxml import etree
+except ImportError:
+    import xml.etree.ElementTree as etree
 
 __author__ = 'Nikolay Telepenin'
 __copyright__ = "Cloud Linux Zug GmbH 2017, KernelCare Project"
@@ -426,3 +430,42 @@ class NexposeClient(object):
         )
         response = self._send(elem)
         return response
+
+class LocalClient(object):
+
+    def __init__(self, **kwargs):
+        self.report_name = kwargs['report-name']
+        self.report_id = kwargs['report-name']
+        self.report_path = kwargs['report-path']
+
+    def report_listing(self):
+        yield {
+            'name': self.report_name,
+            'cfg-id': self.report_id,
+            'status': ReportSummaryStatus.GENERATED,
+            'report-URI': 'LOCAL'
+        }
+
+    def report_history(self):
+        return self.report_listing()
+
+    def report_config(self, id):
+        return {
+            'format': 'raw-xml-v2',
+        }
+
+    def get_report(self, uri):
+        with open(self.report_path) as f:
+            return etree.XML(f.read())
+
+    def create_exception_for_device(self, **kwargs):
+        return None
+
+    def approve_exception(self, *args, **kwargs):
+        return
+
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass

@@ -15,6 +15,7 @@ import yaml
 from nexpose_client import (
     ReportSummaryStatus,
     NexposeClient,
+    LocalClient,
     ExceptionReason,
     ExceptionScope)
 from parse import ns_xml, raw_xml_v2
@@ -41,7 +42,7 @@ EXCEPTION_COMMENT = "Added by kcare-nexpose"
 logging.basicConfig(
     format=u'%(levelname)-8s [%(asctime)s] %(message)s',
     level=logging.INFO,
-    filename=u'working.log')
+    filename=u'kcare-nexpose.log')
 
 logging.getLogger().addHandler(logging.StreamHandler())
 
@@ -121,7 +122,12 @@ def process(config):
         logger.error('Empty information about kernelcare CVE')
         sys.exit(1)
 
-    with NexposeClient(**config['nexpose']) as client:
+    if config['nexpose'].get('host') and config['nexpose'].get('port'):
+        context_manager = NexposeClient
+    else:
+        context_manager = LocalClient
+
+    with context_manager(**config['nexpose']) as client:
 
         # find report by name
         reports = client.report_listing()
@@ -187,7 +193,10 @@ def process(config):
 
         # Add vuln to exception list
         is_approve = config['nexpose']['is_approve']
+        result = {}
         for vuln_id, device_id, ip in vulnerabilities:
+            result.setdefault(ip, []).append(vuln_id)
+
             try:
                 exception_id = client.create_exception_for_device(
                     vuln_id=vuln_id,
@@ -213,6 +222,12 @@ def process(config):
                     logger.info("Exception already exists")
                 else:
                     raise e
+        
+        count = 0
+        for k, v in sorted(result.items(), key=lambda x: x[0]): # sorted by key
+            count += len(v)
+            logger.info('For "{0}" marked {1} vulnerabilities'.format(k, len(v)))
+        logger.info('Total marked {0} vulnerabilities'.format(count))
 
         if is_approve:
             logger.info('Don\'t forget regenerate "{0}" report'.format(
